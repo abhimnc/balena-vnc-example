@@ -1,0 +1,56 @@
+# FROM balenalib/aarch64-debian:bullseye-build
+#changed the image from original repo
+FROM balenalib/raspberry-pi-debian-python
+
+# Set a default value for DISPLAY
+ENV DISPLAY=:1
+
+ENV UDEV=on
+
+# Install kmod and any other dependencies
+RUN apt-get update && apt-get install -y kmod && \
+    # Clean up package lists to reduce image size
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Install dependencies for libcamera
+RUN install_packages libcamera-apps
+
+RUN install_packages \
+    libcamera-dev \
+    libcamera-apps-lite \
+    python3 \
+    v4l-utils
+
+
+RUN apt-get update && \
+    apt-get install -y python3 python3-tk && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN install_packages x11vnc \
+    x11-utils \
+    xvfb \
+    wmctrl \
+    supervisor \
+    gnome-calculator
+
+RUN apt-get update && apt-get install -y xvfb
+
+
+
+# RUN sudo apt-get install python3-tk
+
+# RUN pip install tkinter
+#WORKDIR /vnc-app/supervisor
+
+# COPY /vnc-app/supervisor/camera_app.py /usr/src/app
+
+
+WORKDIR /usr/src/app
+
+COPY . .
+
+COPY supervisor /etc/supervisor
+
+RUN chmod +x /etc/supervisor/camera_app.py
+
+CMD ["bash", "start.sh"]    
